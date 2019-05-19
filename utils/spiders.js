@@ -180,7 +180,7 @@ module.exports = {
   async getCq() {
     // 数据
     let cqData = []
-    function formatData($) {
+    function formatData($,type) {
       $('#hero_list')
         .find('tr')
         .each((i, e) => {
@@ -221,22 +221,23 @@ module.exports = {
             skillName,
             skillIcon,
             weaponName,
-            weaponIcon
+            weaponIcon,
+            type
           })
         })
     }
     let $ = await tools.getDataP('http://wiki.joyme.com/cq/%E5%89%91%E5%A3%AB')
-    formatData($)
+    formatData($,'剑士')
     let $1 = await tools.getDataP('http://wiki.joyme.com/cq/%E9%AA%91%E5%A3%AB')
-    formatData($1)
+    formatData($1,'骑士')
     let $2 = await tools.getDataP('http://wiki.joyme.com/cq/%E5%BC%93%E6%89%8B')
-    formatData($2)
+    formatData($2,'弓手')
     let $3 = await tools.getDataP('http://wiki.joyme.com/cq/%E7%8C%8E%E4%BA%BA')
-    formatData($3)
+    formatData($3,'猎人')
     let $4 = await tools.getDataP('http://wiki.joyme.com/cq/%E6%B3%95%E5%B8%88')
-    formatData($4)
+    formatData($4,'法师')
     let $5 = await tools.getDataP('http://wiki.joyme.com/cq/%E7%A5%AD%E5%8F%B8')
-    formatData($5)
+    formatData($5,'祭司')
 
     // console.log(cqData)
     fs.writeFile(
