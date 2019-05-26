@@ -8,4 +8,10 @@ const spider = require('./utils/spiders')
 
 // 获取克鲁赛德战记的数据
 // spider.getCq()
-spider.getGif()
+// spider.getGif()
+
+// 获取简单的列表数据
+// spider.getCqSimple()
+
+// 获取新闻数据
+spider.getNews()

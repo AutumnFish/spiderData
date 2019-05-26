@@ -48,7 +48,30 @@ module.exports = {
       c.queue(url)
     })
   },
-
+  getFileP(url) {
+    return new Promise((resolve, reject) => {
+      // 实例化爬虫对象
+      var c = new Crawler({
+        jQuery: false,
+        // 最大连接数
+        // maxConnections: 1,
+        // rateLimit: 1000,
+        // This will be called for each crawled page
+        callback: function(error, res, done) {
+          if (error) {
+            console.log(error)
+          } else {
+            // var $ = res.$
+            // func($, url)
+            resolve(res.body)
+          }
+          done()
+        }
+      })
+      // 请求地址
+      c.queue(url)
+    })
+  },
   getFile(url, func) {
     var c = new Crawler({
       encoding: null,

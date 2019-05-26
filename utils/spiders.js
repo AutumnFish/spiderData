@@ -7,7 +7,31 @@ let path = require('path')
 // 导入querystring模块
 const qs = require('querystring')
 
-// 获取lol的数据 从多玩获取
+// 处理新闻数据
+function formatNews(data) {
+  data = JSON.parse(data)
+
+  // 最终的数据
+  let finalData = []
+  data.data.items.forEach(v => {
+    // console.log(v);
+    finalData.push({
+      id: finalData.length + 1,
+      title: v.resource.title,
+      content: v.resource.content_short,
+      cover: v.resource.image_uri,
+      type: parseInt(Math.random() * 6),
+      read: 0,
+      comment: 0,
+      author: '管理员',
+      date: parseInt(Math.random() * 9),
+      state: Math.random() > 0.5 ? '已发布' : '草稿',
+      isDelete: false
+    })
+  })
+  // console.log(finalData);
+  return finalData
+}
 
 module.exports = {
   // 获取lol的数据
@@ -180,7 +204,7 @@ module.exports = {
   async getCq() {
     // 数据
     let cqData = []
-    function formatData($,type) {
+    function formatData($, type) {
       $('#hero_list')
         .find('tr')
         .each((i, e) => {
@@ -227,21 +251,77 @@ module.exports = {
         })
     }
     let $ = await tools.getDataP('http://wiki.joyme.com/cq/%E5%89%91%E5%A3%AB')
-    formatData($,'剑士')
+    formatData($, '剑士')
     let $1 = await tools.getDataP('http://wiki.joyme.com/cq/%E9%AA%91%E5%A3%AB')
-    formatData($1,'骑士')
+    formatData($1, '骑士')
     let $2 = await tools.getDataP('http://wiki.joyme.com/cq/%E5%BC%93%E6%89%8B')
-    formatData($2,'弓手')
+    formatData($2, '弓手')
     let $3 = await tools.getDataP('http://wiki.joyme.com/cq/%E7%8C%8E%E4%BA%BA')
-    formatData($3,'猎人')
+    formatData($3, '猎人')
     let $4 = await tools.getDataP('http://wiki.joyme.com/cq/%E6%B3%95%E5%B8%88')
-    formatData($4,'法师')
+    formatData($4, '法师')
     let $5 = await tools.getDataP('http://wiki.joyme.com/cq/%E7%A5%AD%E5%8F%B8')
-    formatData($5,'祭司')
+    formatData($5, '祭司')
 
     // console.log(cqData)
     fs.writeFile(
       path.join(__dirname, '../data/cqList.json'),
+      JSON.stringify(cqData),
+      err => {
+        if (err) console.log('err')
+        console.log('success')
+      }
+    )
+  },
+  // 获取cq的列表数据
+  async getCqSimple() {
+    // 数据
+    let cqData = []
+    function formatData($) {
+      $('table')
+        .find('tr')
+        .each((i, e) => {
+          if ($(e).find('td').length == 0) return
+          // 名字
+          const heroName = $(e)
+            .find('td>a')
+            .attr('title')
+          // 头像
+          const heroIcon = $(e)
+            .find('td>.hero-icon>a>img')
+            .attr('src')
+          // console.log(heroIcon);
+          // 技能
+          const skillName = $(e)
+            .find('.joymewiki-tooltips>a>img')
+            .attr('alt')
+            .split('.')[0]
+          // console.log(skillName);
+
+          // console.log(weaponIcon)
+          cqData.push({
+            heroName,
+            heroIcon,
+            skillName
+          })
+        })
+    }
+    let $ = await tools.getDataP('http://wiki.joyme.com/cq/%E5%89%91%E5%A3%AB')
+    formatData($)
+    let $1 = await tools.getDataP('http://wiki.joyme.com/cq/%E9%AA%91%E5%A3%AB')
+    formatData($1)
+    let $2 = await tools.getDataP('http://wiki.joyme.com/cq/%E5%BC%93%E6%89%8B')
+    formatData($2)
+    let $3 = await tools.getDataP('http://wiki.joyme.com/cq/%E7%8C%8E%E4%BA%BA')
+    formatData($3)
+    let $4 = await tools.getDataP('http://wiki.joyme.com/cq/%E6%B3%95%E5%B8%88')
+    formatData($4)
+    let $5 = await tools.getDataP('http://wiki.joyme.com/cq/%E7%A5%AD%E5%8F%B8')
+    formatData($5)
+
+    // console.log(cqData)
+    fs.writeFile(
+      path.join(__dirname, '../data/cqSimple.json'),
       JSON.stringify(cqData),
       err => {
         if (err) console.log('err')
@@ -279,12 +359,90 @@ module.exports = {
               if (i == list.length) {
                 // console.log('finish');
                 // console.log(list);
-                fs.writeFile(path.join(__dirname,'../data/cqList.json'),JSON.stringify(list),(err)=>{
-                  console.log('finish');
-                })
+                fs.writeFile(
+                  path.join(__dirname, '../data/cqList.json'),
+                  JSON.stringify(list),
+                  err => {
+                    console.log('finish')
+                  }
+                )
               }
             })
         })
+      }
+    )
+  },
+  // 获取新闻
+  async getNews() {
+    let total = [
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50IjoyMCwiQXJ0aWNsZUxlIjoxNTU4ODMyOTgyfQ==&limit=20&action=upglide'
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo0MCwiQXJ0aWNsZUxlIjoxNTU4NzUyMTk3fQ=='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo2MCwiQXJ0aWNsZUxlIjoxNTU4NzEyMTAwfQ=='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo4MCwiQXJ0aWNsZUxlIjoxNTU4NjkyMzM3fQ=='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50IjoxMDAsIkFydGljbGVMZSI6MTU1ODY3NDMwNH0='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50IjoxMjAsIkFydGljbGVMZSI6MTU1ODY1NjY4Nn0='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50IjoxNDAsIkFydGljbGVMZSI6MTU1ODYzMzQ5NH0='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo0MjAsIkFydGljbGVMZSI6MTU1ODM1NTY2OX0='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo2NDAsIkFydGljbGVMZSI6MTU1ODAzNzIxMn0='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo4NDAsIkFydGljbGVMZSI6MTU1Nzg0NjkxNn0='
+        )
+      ),
+      ...formatNews(
+        await tools.getFileP(
+          'https://api.wallstreetcn.com/apiv1/content/information-flow?channel=global&accept=article&limit=20&action=upglide&cursor=eyJTbG90T2Zmc2V0IjowLCJUb3RhbENvdW50Ijo4NDAsIkFydGljbGVMZSI6MTU1Nzg0NjkxNn0='
+        )
+      )
+    ]
+    total.sort((a,b)=>{
+      return a.date-b.date
+    }).forEach((v, i) => {
+      v.id = i + 1
+      v.date = '2019-05-2'+v.date
+    })
+    // console.log(total.length)
+    fs.writeFile(
+      path.join(__dirname, '../data/article.json'),
+      JSON.stringify(total),
+      (err, data) => {
+        console.log('news get success')
       }
     )
   }
